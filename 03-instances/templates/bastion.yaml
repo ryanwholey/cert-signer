@@ -1,0 +1,83 @@
+variant: fcos
+version: 1.1.0
+systemd:
+  units:
+    - name: sign-host-certificate.service
+      enabled: true
+      contents: |
+        [Service]
+        ExecStart=/bin/sh /etc/vault/sign-host-cert.sh
+        Restart=on-failure
+        RestartSec=20
+        Type=forking
+
+        [Unit]
+        Description=Sign a new host cert on boot, then weekly
+
+        [Timer]
+        OnCalendar=weekly
+        Persistent=true
+
+        [Install]
+        WantedBy=timers.target
+storage:
+  files:
+    - path: /etc/ssh/trusted-user-ca-keys.pem
+      filesystem: root
+      mode: 0600
+      contents: 
+        inline: |
+          ${ca_client_public_key}
+    - path: /etc/vault/sign-host-cert.sh
+      filesystem: root
+      mode: 0644
+      contents: 
+        inline: |
+          #!/bin/sh
+
+          set -eu -o pipefail
+
+          token_path=/root/.vault-token
+          ssh_pub_key_path=/etc/ssh/ssh_host_rsa_key.pub
+          cert_path=/etc/ssh/ssh_host_rsa_key-cert.pub
+
+          echo "Authenticating with Vault"
+          curl -sS -d @- "${vault_addr}/v1/auth/approle/login" <<-EOF | jq -r '.auth.client_token' > $token_path
+          {
+            "role_id": "${vault_role_id}",
+            "secret_id": "${vault_secret_id}"
+          }
+          EOF
+
+          echo "Successfully authenticated with Vault"
+
+          echo "Signing host cert"
+          curl -sS \
+            -H "X-Vault-Token: $(cat $token_path)" \
+            -X POST \
+            -d @- "${vault_addr}/v1/ssh-host-signer/sign/instance" <<-EOF | jq -r .data.signed_key > $cert_path
+          {
+            "public_key": "$(cat $ssh_pub_key_path)",
+            "cert_type": "host"
+          }
+          EOF
+
+          chmod 0640 $cert_path
+
+          echo "Successfully signed cert"
+    - path: /etc/ssh/sshd_config
+      filesystem: root
+      mode: 0600
+      append: 
+        - inline: |
+            # For client keys
+            TrustedUserCAKeys /etc/ssh/trusted-user-ca-keys.pem
+
+            # For host keys
+            HostKey /etc/ssh/ssh_host_rsa_key
+            HostCertificate /etc/ssh/ssh_host_rsa_key-cert.pub
+passwd:
+  users:
+    - name: engineer
+    - name: platform
+      groups: [ root, docker, wheel, sudo ]

@@ -1,0 +1,21 @@
+variant: fcos
+version: 1.1.0
+storage:
+  files:
+    - path: /etc/ssh/trusted-user-ca-keys.pem
+      filesystem: root
+      mode: 0600
+      contents: 
+        inline: |
+          ${ca_client_public_key}
+    - path: /etc/ssh/sshd_config
+      filesystem: root
+      mode: 0600
+      append: 
+        - inline: |
+            # For client keys
+            TrustedUserCAKeys /etc/ssh/trusted-user-ca-keys.pem
+passwd:
+  users:
+    - name: platform
+      groups: [ root, docker, wheel, sudo ]
