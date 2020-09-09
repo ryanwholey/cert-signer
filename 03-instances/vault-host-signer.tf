@@ -48,8 +48,8 @@ resource "vault_ssh_secret_backend_role" "instance" {
 
 output "approle" {
   value = {
-    id     = vault_approle_auth_backend_role.instance.id                  // auth/approle/role/instance
-    role   = vault_approle_auth_backend_role.instance.role_id             // 4fd9e19e-b058-1d81-65a0-508d65d6c0c4
-    secret = vault_approle_auth_backend_role_secret_id.instance.secret_id // d49a09c6-fd56-54e2-5b8b-a6328ff82dc1
+    id     = vault_approle_auth_backend_role.instance.id
+    role   = vault_approle_auth_backend_role.instance.role_id
+    secret = vault_approle_auth_backend_role_secret_id.instance.secret_id
   }
 }

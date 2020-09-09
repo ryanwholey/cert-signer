@@ -1,7 +1,6 @@
 data "okta_everyone_group" "everyone" {}
 
 resource "okta_auth_server" "vault" {
-  # The audiences variable is not used by Vault during OIDC authentication
   audiences   = ["api://default"]
   description = "Vault authorization server with custom group claims"
   name        = "Vault"
@@ -18,7 +17,6 @@ resource "okta_auth_server_policy" "default" {
   client_whitelist = ["ALL_CLIENTS"]
 }
 
-
 resource "okta_auth_server_policy_rule" "allow_all" {
   auth_server_id       = okta_auth_server.vault.id
   policy_id            = okta_auth_server_policy.default.id
@@ -26,8 +24,8 @@ resource "okta_auth_server_policy_rule" "allow_all" {
   name                 = "allow all"
   priority             = 1
   group_whitelist      = [okta_group.engineering.id]
-  scope_whitelist      = ["openid", okta_auth_server_scope.groups.name, "profile"]
-  grant_type_whitelist = ["implicit", "authorization_code"]
+  scope_whitelist      = ["openid", "profile", okta_auth_server_scope.groups.name]
+  grant_type_whitelist = ["authorization_code"]
 }
 
 resource "okta_auth_server_scope" "groups" {
@@ -38,22 +36,6 @@ resource "okta_auth_server_scope" "groups" {
   default          = true
 }
 
-resource "okta_auth_server_claim" "groups" {
-  auth_server_id    = okta_auth_server.vault.id
-  name              = "groups"
-  status            = "ACTIVE"
-  claim_type        = "IDENTITY"
-  value_type        = "GROUPS"
-  group_filter_type = "REGEX"
-  value             = ".*"
-
-  scopes = [
-    "openid",
-    "profile",
-    okta_auth_server_scope.groups.name
-  ]
-}
-
 resource "okta_auth_server_claim" "department" {
   auth_server_id = okta_auth_server.vault.id
   name           = "department"
@@ -61,7 +43,7 @@ resource "okta_auth_server_claim" "department" {
   claim_type     = "IDENTITY"
   value_type     = "EXPRESSION"
   value          = "user.department"
-  scopes         = ["openid", okta_auth_server_scope.groups.name, "profile"]
+  scopes         = [okta_auth_server_scope.groups.name]
 }
 
 resource "okta_auth_server_claim" "division" {
@@ -71,5 +53,5 @@ resource "okta_auth_server_claim" "division" {
   claim_type     = "IDENTITY"
   value_type     = "EXPRESSION"
   value          = "user.division"
-  scopes         = ["openid", okta_auth_server_scope.groups.name, "profile"]
+  scopes         = [okta_auth_server_scope.groups.name]
 }

@@ -26,16 +26,14 @@ data "okta_user" "engineering" {
 }
 
 resource "okta_app_oauth" "vault" {
-  label = "Vault"
-  type  = "web"
-
+  label                      = "Vault"
+  type                       = "web"
   token_endpoint_auth_method = "client_secret_post"
+  login_uri                  = local.redirect_uri
+  redirect_uris              = local.redirect_uris
 
-  login_uri = local.redirect_uri
-
-  grant_types    = ["authorization_code", "implicit"]
-  redirect_uris  = local.redirect_uris
-  response_types = ["code", "token", "id_token"]
+  grant_types    = ["authorization_code"]
+  response_types = ["code"]
 
   lifecycle {
     ignore_changes = [groups]

@@ -15,6 +15,25 @@ storage:
         - inline: |
             # For client keys
             TrustedUserCAKeys /etc/ssh/trusted-user-ca-keys.pem
+systemd:
+  units:
+    - name: nginx.service
+      enabled: true
+      contents: |
+        [Unit]
+        Description=Nginx
+        After=network.target
+
+        [Service]
+        Restart=always
+        RestartSec=5
+        ExecStart=/bin/docker run --rm --name nginx -p 80:80 nginx
+        ExecStop=-/bin/docker stop nginx
+        ExecStop=-/bin/docker rm nginx
+
+        [Install]
+        WantedBy=multi-user.target
+
 passwd:
   users:
     - name: platform

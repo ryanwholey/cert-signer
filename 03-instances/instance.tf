@@ -9,6 +9,13 @@ resource "aws_security_group" "instance" {
     cidr_blocks = [data.terraform_remote_state.platform.outputs.cidr_block]
   }
 
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = [data.terraform_remote_state.platform.outputs.cidr_block]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -79,4 +86,3 @@ resource "aws_iam_instance_profile" "instance" {
 output "instance" {
   value = aws_instance.instance.private_ip
 }
-

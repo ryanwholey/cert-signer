@@ -1,0 +1,25 @@
+#!/usr/bin/env node
+
+
+const fs = require('fs')
+const path = require('path')
+
+const knownHostsPath = path.join(process.env.HOME, '.ssh/known_hosts')
+
+const bastion = 'bastion.ryanwholey.com'
+
+;(async () => {
+    const caPrefix = `@cert-authority ${bastion}`
+    try {
+        await fs.promises.stat(knownHostsPath)
+    } catch (error) {
+        await fs.promises.writeFile(knownHostsPath, '')
+    }
+    const hosts = (await fs.promises.readFile(knownHostsPath, 'utf8'))
+        .split('\n')
+        .filter(l => !!l)
+        .filter(l => !l.startsWith(caPrefix))
+
+    await fs.promises.writeFile('/tmp/hosts', hosts.join('\n'))
+})()
+

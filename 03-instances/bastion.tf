@@ -93,23 +93,6 @@ resource "aws_iam_role" "bastion" {
   assume_role_policy = data.aws_iam_policy_document.trust.json
 }
 
-data "aws_iam_policy_document" "bastion" {
-  statement {
-    actions   = ["ec2:Describe*"]
-    resources = ["*"]
-  }
-}
-
-resource "aws_iam_policy" "bastion" {
-  name   = "bastion"
-  policy = data.aws_iam_policy_document.bastion.json
-}
-
-resource "aws_iam_role_policy_attachment" "bastion" {
-  role       = aws_iam_role.bastion.name
-  policy_arn = aws_iam_policy.bastion.arn
-}
-
 resource "aws_iam_role_policy_attachment" "bastion_ignition" {
   role       = aws_iam_role.bastion.name
   policy_arn = aws_iam_policy.ignition.arn
