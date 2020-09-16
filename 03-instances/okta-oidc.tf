@@ -26,6 +26,7 @@ resource "okta_auth_server_policy_rule" "allow_all" {
   group_whitelist      = [okta_group.engineering.id]
   scope_whitelist      = ["openid", "profile", okta_auth_server_scope.groups.name]
   grant_type_whitelist = ["authorization_code"]
+  
 }
 
 resource "okta_auth_server_scope" "groups" {

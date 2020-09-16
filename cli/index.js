@@ -119,7 +119,7 @@ async function updateCertAuthority({ environment, addr, token }) {
 
   hosts.push(`${certAuthorityPrefix} ${cert.data.data.public_key}`)
 
-  await fs.promises.writeFile('/tmp/hosts', hosts.join('\n'))
+  await fs.promises.writeFile(knownHostsPath, hosts.join('\n'))
 }
   
 async function signClientCert({ addr, role, token }) {
@@ -173,7 +173,7 @@ function formatOpts({
       opts = opts.concat(`-J ${role}@${bastionMap[environment]} ${role}@${host}`.split(' '))
     }
   }
-  console.log(opts)
+
   return opts
 }
 

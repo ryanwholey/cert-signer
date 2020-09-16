@@ -22,9 +22,9 @@ resource "aws_security_group" "bastion" {
 }
 
 resource "aws_launch_template" "bastion" {
-  name_prefix          = "bastion-"
-  instance_type        = "t3.small"
-  image_id             = data.aws_ami.fedora_coreos.id
+  name_prefix   = "bastion-"
+  instance_type = "t3.small"
+  image_id      = data.aws_ami.fedora_coreos.id
 
   iam_instance_profile {
     name = aws_iam_instance_profile.bastion.name

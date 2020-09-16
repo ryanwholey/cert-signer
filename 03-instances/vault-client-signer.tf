@@ -15,9 +15,10 @@ resource "vault_ssh_secret_backend_role" "engineer" {
   default_user  = "engineer"
   allowed_users = "engineer"
 
-  allowed_extensions = "permit-port-forwarding"
+  allowed_extensions = "permit-port-forwarding,permit-tunnel"
   default_extensions = {
     "permit-port-forwarding" = ""
+    "permit-tunnel"          = ""
   }
 
   allow_user_certificates = true
@@ -33,10 +34,11 @@ resource "vault_ssh_secret_backend_role" "platform" {
   default_user  = "platform"
   allowed_users = "engineer,platform"
 
-  allowed_extensions = "permit-pty,permit-port-forwarding"
+  allowed_extensions = "permit-pty,permit-port-forwarding,permit-tunnel"
   default_extensions = {
     "permit-pty"             = ""
     "permit-port-forwarding" = ""
+    "permit-tunnel"          = ""
   }
 
   allow_user_certificates = true

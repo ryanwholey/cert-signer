@@ -42,7 +42,9 @@ storage:
           cert_path=/etc/ssh/ssh_host_rsa_key-cert.pub
 
           echo "Authenticating with Vault"
-          curl -sS -d @- "${vault_addr}/v1/auth/approle/login" <<-EOF | jq -r '.auth.client_token' > $token_path
+          curl -sS \
+            -X POST \
+            -d @- "${vault_addr}/v1/auth/approle/login" <<-EOF | jq -r '.auth.client_token' > $token_path
           {
             "role_id": "${vault_role_id}",
             "secret_id": "${vault_secret_id}"
