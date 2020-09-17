@@ -1,2 +1,0 @@
- VAULT_TOKEN=$(cat /tmp/staging-platform-vault-token) vault write -field=signed_key ssh-client-signer/sign/platform public_key=@$HOME/.ssh/id_rsa.pub > ~/.ssh/id_rsa-cert.pub
-

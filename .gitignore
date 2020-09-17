@@ -3,4 +3,5 @@ terraform.tfstate.*
 terraform.tfstate
 bin/
 node_modules/
+.env
 
