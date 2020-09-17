@@ -1,0 +1,84 @@
+---
+systemd:
+  units:
+    - name: vault.service
+      enable: true
+      contents: |
+        [Service]
+        ExecStartPre=/bin/mkdir -p \
+          /var/vault \
+          /etc/vault
+        ExecStart=/usr/bin/rkt run \
+          --net=host \
+          --insecure-options=image \
+          --volume resolv,kind=host,source=/etc/resolv.conf \
+          --mount volume=resolv,target=/etc/resolv.conf \
+          --volume config,kind=host,source=/etc/vault \
+          --mount volume=config,target=/etc/vault \
+          --volume data,kind=host,source=/var/vault \
+          --mount volume=data,target=/var/vault \
+          docker://vault:${vault_version} --exec=vault -- server -config /etc/vault/vault.hcl
+        Restart=always
+        RestartSec=5
+        [Install]
+        WantedBy=multi-user.target
+storage:
+  files:
+    - path: /etc/vault/server-key.pem
+      filesystem: root
+      mode: 0600
+      contents: 
+        inline: |
+          ${server_key}
+    - path: /etc/vault/server-cert.pem
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          ${server_cert}
+    - path: /etc/vault/ca-cert.pem
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          ${ca_cert}
+    - path: /home/${ssh_user}/.ssh/authorized_keys
+      filesystem: root
+      append: true
+      mode: 0644
+      contents:
+        remote:
+          url: ${authorized_keys_uri}
+    - path: /etc/vault/vault.hcl
+      filesystem: root
+      mode: 0644
+      contents:
+        inline: |
+          listener tcp {
+            address = "[::]:${vault_server_port}"
+
+            tls_cert_file      = "/etc/vault/server-cert.pem"
+            tls_key_file       = "/etc/vault/server-key.pem"
+            tls_client_ca_file = "/etc/vault/ca-cert.pem"
+          }
+
+          api_addr = "${vault_advertise_addr}"
+
+          storage dynamodb {
+            ha_enabled = "true"
+            region     = "${region}"
+            table      = "${dynamo_table}"
+          }
+
+          seal awskms {
+            region     = "${region}"
+            kms_key_id = "${kms_key}"
+          }
+
+          disable_mlock = "true"
+          ui            = "true"
+passwd:
+  users:
+    - name: ${ssh_user}
+      groups: [ sudo, docker ]
+

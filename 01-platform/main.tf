@@ -3,7 +3,7 @@ data "aws_availability_zones" "available" {
 }
 
 module "network" {
-  source = "../../modules/network"
+  source = "./modules/network"
 
   cidr   = "10.0.0.0/16"
   prefix = var.name
@@ -11,7 +11,7 @@ module "network" {
 }
 
 module "vault" {
-  source = "../../modules/vault-coreos"
+  source = "./modules/vault-coreos"
 
   name        = var.name
   vpc_id      = module.network.vpc_id
